@@ -13,7 +13,7 @@ class Search extends React.Component {
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
-    Socket.connect('list', () => {})
+    Socket.connect(() => {})
   }
   componentDidMount() {
     this.onStudentLoggedIn();
@@ -26,18 +26,18 @@ class Search extends React.Component {
     this.query(searchText);
   }
   onStudentLoggedIn() {
-    Socket.list.on('logged in', user => {
+    Socket.users.on('logged in', user => {
       this.query(this.state.textSearch);
     });
   }
   onStudentLoggedOut() {
-    Socket.list.on('logged out', user => {
+    Socket.users.on('logged out', user => {
       this.query(this.state.textSearch);
     });
   }
   onstartChat(withUser) {
     this.props.startChat(withUser);
-    Socket.list.emit('start-chat', withUser, this.props.currentUser);
+    Socket.users.emit('start-chat', withUser, this.props.currentUser);
     console.log('start-chat with user', withUser);
     this.props.history.push('/network');
   }
@@ -46,7 +46,7 @@ class Search extends React.Component {
       textSearch,
     });
     const currentUser = this.props.currentUser;
-    Socket.list.emit('query', { search: textSearch}, (results) => {
+    Socket.users.emit('query', { search: textSearch}, (results) => {
       if (currentUser) {
         results = results.filter(r => currentUser.email !== r.email)
       }

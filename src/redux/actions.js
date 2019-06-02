@@ -9,8 +9,8 @@ export const loginUser = (email, password) => {
     .then(response => {
       sessionStorage.setItem('email', email);
       sessionStorage.setItem('password', password);
-      Socket.connect('list', (list) => {
-        list.emit('login', {
+      Socket.connect(users => {
+        users.emit('login', {
           email, 
           password
         });
@@ -19,7 +19,7 @@ export const loginUser = (email, password) => {
           payload: response.data
         });
         // When someone initiates chat send action
-        list.on('start-chat', fromUser => {
+        users.on('start-chat', fromUser => {
           console.log('start-chat', fromUser);
           startChat(fromUser)(dispatch);
           dispatch(imReceiver());
@@ -89,7 +89,7 @@ export const updateUser = (email, password, firstName, lastName, learningTargets
 
 export const logoutUser = (user) => {
   return dispatch => {
-    Socket.list.emit('logout', user);
+    Socket.users.emit('logout', user);
     sessionStorage.removeItem('email');
     sessionStorage.removeItem('password');
     dispatch({

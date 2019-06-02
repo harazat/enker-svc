@@ -4,23 +4,20 @@ const apiHost = process.env.REACT_APP_API_HOST  || 'http://localhost:3001';
 
 class Socket {
   constructor() {
-    this.list = null;
+    this.users = null;
   }
-  connect(namespace, fn) {
-    if (this.list == null) {
-      this.list = io(`${apiHost}/${namespace}`);
-      this.list.on('connect', () => {
-        fn(this.list);
+  connect(fn) {
+    if (this.users == null) {
+      this.users = io(`${apiHost}/users`);
+      this.users.on('connect', () => {
+        fn(this.users);
       })
-      this.list.on('error', () => {
+      this.users.on('error', () => {
         fn(null);
       })
     } else {
-      fn(this.list);
+      fn(this.users);
     }
-  }
-  getList() {
-    return this.list;
   }
 }
 

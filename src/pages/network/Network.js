@@ -40,21 +40,21 @@ class NetworkPage extends Component {
     }
   }
   emitChatMessage(message) {
-    Socket.list.emit('chat-message', this.props.withUser, this.props.currentUser, message);
+    Socket.users.emit('chat-message', this.props.withUser, this.props.currentUser, message);
   }
   emitEditorMessage(message) {
-    Socket.list.emit('editor-message', this.props.withUser, this.props.currentUser, message);
+    Socket.users.emit('editor-message', this.props.withUser, this.props.currentUser, message);
   }
   componentDidMount() {
     addResponseMessage(`Message ${this.props.withUser ? this.props.withUser.firstName: ''}!`)
-    Socket.connect('list', (list) => {
-      list.on('chat-message', (fromUser, message) => {
+    Socket.connect(users => {
+      users.on('chat-message', (fromUser, message) => {
         addResponseMessage(message);
         this.setState((prevState) => ({
           chatMessages: [...prevState.chatMessages, message]
         }));
       });
-      list.on('editor-message', (fromUser, message) => {
+      users.on('editor-message', (fromUser, message) => {
         this.setState({
           editorText: message
         })
@@ -62,8 +62,8 @@ class NetworkPage extends Component {
     });
   }
   componentWillUnmount() {
-    Socket.list.removeListener('chat-message');
-    Socket.list.removeListener('editor-message');
+    Socket.users.removeListener('chat-message');
+    Socket.users.removeListener('editor-message');
   }
   render() {
     return (

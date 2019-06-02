@@ -59,7 +59,7 @@ class Drawing extends React.Component {
     this.prevPos = { offsetX, offsetY };
   }
   sendPaintData() {
-    Socket.list.emit('drawing-message', this.props.withUser, this.props.currentUser, this.line);
+    Socket.users.emit('drawing-message', this.props.withUser, this.props.currentUser, this.line);
   }
   clear() {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height); // Clears the canvas
@@ -78,8 +78,8 @@ class Drawing extends React.Component {
     window.addEventListener('resize', () => {
       this.canvas.width = this.container.offsetWidth;
     });
-    Socket.connect('list', (list) => {
-      list.on('drawing-message', (fromUser, line) => {
+    Socket.connect(users => {
+      users.on('drawing-message', (fromUser, line) => {
         if (Array.isArray(line) && line.length === 0) {
           this.clear();
         }
