@@ -32,7 +32,8 @@ class VideoChat extends React.Component {
       debug: true,
       localVideo: {
         mirror: false
-      }
+      },
+      stunservers: ['stun.l.google.com:19302', 'stun1.l.google.com:19302', 'stun2.l.google.com:19302']
     });
     this.webrtc.on('peerStreamAdded', this.addVideo);
     this.webrtc.on('removedPeer', this.removeVideo);
