@@ -27,6 +27,71 @@ function usersNamespace(io) {
     // TODO: add listener for logout message, update db, emit
     
     // TODO: add listener to search query
+    socket.on('login', user => {
+      socket.join(user.email);
+      db.getClient().collection("students").findOneAndUpdate(
+        {email: user.email},
+        {$set: {'loggedIn':true}},
+        {returnOriginal: false},
+        function(err, results){
+          if(err){
+            socket.emit('list.error', err);
+          }
+          else if(results.value == null){
+            socket.emit('list.error', {error: "Student with email"})
+          }
+          else {
+            users.emit('logged in', results.value)
+          }
+        }
+        
+      )
+    }
+    )
+socket.on('disconnect', user =>{
+  socket.leave(user.email);
+  db.getClient().collection("students").findOneAndUpdate(
+    {email: user.email},
+    {$set: {'loggedIn': false}},
+    {returnOriginal: false},
+    function(err, results){
+      if(err){
+        socket.emit('list.error', err);
+      }
+      else if(results.value == null){
+        socket.emit('list.error', {error: "Socket ID" +socket.id + "does not exist"})
+      }
+      else {
+        users.emit('logged out', results.value)
+      }
+    }
+    
+  )
+
+}
+)
+socket.on('log out', user =>{
+  socket.leave(user.email);
+  db.getClient().collection("students").findOneAndUpdate(
+    {email: user.email},
+    {$set: {'loggedIn': false}},
+    {returnOriginal: false},
+    function(err, results){
+      if(err){
+        socket.emit('list.error', err);
+      }
+      else if(results.value == null){
+        socket.emit('list.error', {error: "Socket ID" +socket.id + "does not exist"})
+      }
+      else {
+        users.emit('logged out', results.value)
+      }
+    }
+    
+  )
+
+}
+)
   });
 }
 
