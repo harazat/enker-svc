@@ -12,6 +12,24 @@ function connect(server) {
 function usersNamespace(io) {
   const users = io.of('/users');
   users.on('connection', socket => {
+
+
+    socket.on('textSearch',(textSearch, fn)=> {
+      const textQuery={$text: {$search:textSearch}}
+
+      const arrQuery = {learningTargets: textSearch}  
+
+      const finalQuery = textSearch ?  {$or: [textQuery, arrQuery]} : {}
+            db.getClient().collection("students").find(finalQuery).sort().toArray((error, results)  => {
+        if(error){
+          console.log(error);
+
+        }
+        else{
+          fn(results)
+        }
+      } )
+    })
     // TODO: add listener for starting chat
     
     // TODO: add listener to chat message
