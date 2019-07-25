@@ -7,7 +7,7 @@ const host = process.env.MONGO_HOST || 'ec2-54-213-136-50.us-west-2.compute.amaz
 const url = `mongodb://${host}:27017`;
 
 // Database Name
-const dbName = 'tumo_azat';
+const dbName = 'tumo_Lilit';
 
 class Database {
   static connect() {
