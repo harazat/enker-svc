@@ -3,113 +3,112 @@ var db = require('./db');
 
 function connect(server) {
   const io = socketIO(server);
-  
-  // TODO: Create namespaces
-  usersNamespace(io);
+  userNamespace(io);
 }
 
 // TODO: List namespace will provide list of logged in users
-function usersNamespace(io) {
+function userNamespace(io) {
   const users = io.of('/users');
   users.on('connection', socket => {
 
+    socket.on('start-chat', (toUser, fromUser) => {
+      if (toUser) {
+        users.in(toUser.email).emit('start-chat', fromUser);
+      }
+    });
 
-    socket.on('textSearch',(textSearch, fn)=> {
-      const textQuery={$text: {$search:textSearch}}
+    socket.on('chat-message', (toUser, fromUser, message) => {
+      if (toUser) {
+        users.in(toUser.email).emit('chat-message', fromUser, message);
+      }
+    });
 
-      const arrQuery = {learningTargets: textSearch}  
+    socket.on('editor-message', (toUser, fromUser, message) => {
+      if (toUser) {
+        users.in(toUser.email).emit('editor-message', fromUser, message);
+      }
+    });
 
-      const finalQuery = textSearch ?  {$or: [textQuery, arrQuery]} : {}
-            db.getClient().collection("students").find(finalQuery).sort().toArray((error, results)  => {
-        if(error){
-          console.log(error);
 
-        }
-        else{
-          fn(results)
-        }
-      } )
-    })
-    // TODO: add listener for starting chat
-    
-    // TODO: add listener to chat message
+    socket.on('drawing-message', (toUser, fromUser, message) => {
+      if (toUser) {
+        users.in(toUser.email).emit('drawing-message', fromUser, message);
+      }
+    });
 
-    // TODO: add listener for editor message WYSIWIG
-
-    // TODO: add listener for drawing
-
-    // TODO: add listener for logging in, update flag loggedIn in Database, join room
-
-    // TODO: add listener on 'disconnect' to log out user, and emit
-
-    // TODO: add listener for logout message, update db, emit
-    
-    // TODO: add listener to search query
+    // When a user logs in 
     socket.on('login', user => {
+      // Join room of user's email
       socket.join(user.email);
+
       db.getClient().collection("students").findOneAndUpdate(
-        {email: user.email},
-        {$set: {'loggedIn':true}},
+        {email:  user.email},
+        {$set: {'loggedIn': true}},
         {returnOriginal: false},
-        function(err, results){
-          if(err){
-            socket.emit('list.error', err);
+        function(err, results) {
+          if (err) {
+            socket.emit('list error', err);
+          } else if(results.value == null) {
+            socket.emit('list error', {error: "Student with email " + user.email  + " does not exist."});
+          } else {
+            users.emit('logged in', results.value);
           }
-          else if(results.value == null){
-            socket.emit('list.error', {error: "Student with email"})
+        });
+    });
+
+    socket.on('disconnect', user => {
+      db.getClient().collection("students").findOneAndUpdate(
+        {email:  user.email},
+        {$set: {'loggedIn': false}},
+        {returnOriginal: false},
+        function(err, results) {
+          if (err) {
+            socket.emit('list error', err);
+          } else if(results.value == null) {
+            socket.emit('list error', {error: "Socket ID " + socket.id  + " does not exist."});
+          } else {
+            users.emit('logged out', results.value);
           }
-          else {
-            users.emit('logged in', results.value)
+        });
+    });
+
+    socket.on('logout', user => {
+      socket.leave(user.email);
+
+      db.getClient().collection("students").findOneAndUpdate(
+        {email:  user.email},
+        {$set: {'loggedIn': false}},
+        {returnOriginal: false},
+        function(err, results) {
+          if (err) {
+            socket.emit('list error', err);
+          } else if(results.value == null) {
+            socket.emit('list error', {error: "Socket ID " + socket.id  + " does not exist."});
+          } else {
+            users.emit('logged out', results.value);
           }
+        });
+    });
+
+    socket.on('query', (params, fn) => {
+      // For a given search params, return student list
+      console.log('query', params);
+      let criteria = {};
+      if (params.search) {
+        const textCriteria = { $text: { $search: params.search } };
+        const learningTargetCriteria = { learningTargets: params.search };
+        criteria = {$or: [textCriteria, learningTargetCriteria]};
+      };
+      db.getClient().collection("students").find(criteria).sort({loggedIn: -1}).toArray(function(err, results) {
+        if (err) {
+          console.log('err', err);
+          socket.emit('list error', err);
+        } else {
+          console.log('results', results);
+          fn(results);
         }
-        
-      )
-    }
-    )
-socket.on('disconnect', user =>{
-  socket.leave(user.email);
-  db.getClient().collection("students").findOneAndUpdate(
-    {email: user.email},
-    {$set: {'loggedIn': false}},
-    {returnOriginal: false},
-    function(err, results){
-      if(err){
-        socket.emit('list.error', err);
-      }
-      else if(results.value == null){
-        socket.emit('list.error', {error: "Socket ID" +socket.id + "does not exist"})
-      }
-      else {
-        users.emit('logged out', results.value)
-      }
-    }
-    
-  )
-
-}
-)
-socket.on('log out', user =>{
-  socket.leave(user.email);
-  db.getClient().collection("students").findOneAndUpdate(
-    {email: user.email},
-    {$set: {'loggedIn': false}},
-    {returnOriginal: false},
-    function(err, results){
-      if(err){
-        socket.emit('list.error', err);
-      }
-      else if(results.value == null){
-        socket.emit('list.error', {error: "Socket ID" +socket.id + "does not exist"})
-      }
-      else {
-        users.emit('logged out', results.value)
-      }
-    }
-    
-  )
-
-}
-)
+      });
+    });
   });
 }
 

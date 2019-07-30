@@ -9,28 +9,23 @@ db.students.insertMany([{
     "Game Development",
     "Filmmaking"
   ],
-  "location": "Yerevan"
-}, 
-{
-  "email": "lilit@gmail.com",
-  "firstName": "Lilit",
-  "lastName": "Hovhannisyan",
+  "location": "Stepanakert"
+}, {
+  "email": "marianna.zakiyan@tumo.org",
+  "firstName": "Marianna",
+  "lastName": "Zakiyan",
   "password": "password",
   "learningTargets": [
     "Game Development",
-    "Programming"
   ],
-  "location": "Paris"
-},
-{
-  "email": "azat@gmail.com",
-  "firstName": "Azat",
-  "lastName": "Harutyunyan",
+  "location": "Gyumri"
+}, {
+  "email": "astghik.hambardzumyan@tumo.org",
+  "firstName": "Astghik",
+  "lastName": "Hambardzumyan",
   "password": "password",
   "learningTargets": [
-    "Game Development",
-    "Web Development",
-    "Programming"
+    "Filmmaking"
   ],
   "location": "Yerevan"
 }
